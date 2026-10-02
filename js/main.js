@@ -41,16 +41,6 @@ function createInitialState() {
 
 let gameState = createInitialState();
 
-function createCardElement(card) {
-  const button = createElement('button', 'card');
-  button.type = 'button';
-  button.dataset.cardId = card.id;
-  button.setAttribute('aria-label', 'Hidden card');
-  const span = createElement('span', 'card__symbol', card.symbol);
-  button.append(span);
-  return button;
-}
-
 function createElement(tagName, className, textContent) {
   const element = document.createElement(tagName);
   if (className) {
@@ -62,11 +52,93 @@ function createElement(tagName, className, textContent) {
   return element;
 }
 
+function createCardElement(card) {
+  const button = createElement('button', 'card');
+  button.type = 'button';
+  button.dataset.cardId = card.id;
+  button.setAttribute('aria-label', 'Hidden card');
+  const span = createElement('span', 'card__symbol', card.symbol);
+  button.append(span);
+  return button;
+}
+
 function renderDeck(deck, boardElement) {
   deck.forEach((card) => {
     const tile = createCardElement(card);
     boardElement.append(tile);
   });
+}
+
+function handleCardClick(event) {
+  const clicked = event.target.closest('.card');
+  if (!clicked) return;
+  if (gameState.isLocked || gameState.isComplete) return;
+  const cardId = Number(clicked.dataset.cardId);
+  const card = gameState.deck.find((card) => card.id === cardId);
+  if (!card) return;
+  if (card.isMatched) return;
+  if (gameState.selectedCardIds.includes(cardId)) return;
+  clicked.classList.add('is-flipped');
+  clicked.setAttribute('aria-label', `Revealed card: ${card.symbol}`);
+  gameState.selectedCardIds.push(cardId);
+  if (gameState.selectedCardIds.length === 2) {
+    gameState.isLocked = true;
+    resolveSelectedPair();
+  }
+}
+
+function updateCounters() {
+  const movesCount = document.querySelector('.moves-count');
+  const matchesCount = document.querySelector('.matches-count');
+  movesCount.textContent = gameState.moves;
+  matchesCount.textContent = `${gameState.matches} / ${CARD_SYMBOLS.length}`;
+}
+
+function resolveSelectedPair() {
+  if (gameState.selectedCardIds.length !== 2) return;
+  const [firstCardId, secondCardId] = gameState.selectedCardIds;
+  const firstCard = gameState.deck.find((card) => card.id === firstCardId);
+  const secondCard = gameState.deck.find((card) => card.id === secondCardId);
+  if (!firstCard || !secondCard) return;
+  gameState.moves++;
+  updateCounters();
+
+  const [firstCardDOM, secondCardDOM] = document.querySelectorAll(
+    `[data-card-id="${firstCardId}"], [data-card-id="${secondCardId}"]`,
+  );
+  if (firstCard.symbol === secondCard.symbol) {
+    firstCard.isMatched = true;
+    secondCard.isMatched = true;
+    firstCardDOM.classList.add('is-matched');
+    secondCardDOM.classList.add('is-matched');
+    firstCardDOM.classList.remove('is-flipped');
+    secondCardDOM.classList.remove('is-flipped');
+    firstCardDOM.setAttribute(
+      'aria-label',
+      `Matched card: ${firstCard.symbol}`,
+    );
+    secondCardDOM.setAttribute(
+      'aria-label',
+      `Matched card: ${secondCard.symbol}`,
+    );
+    firstCardDOM.disabled = true;
+    secondCardDOM.disabled = true;
+    gameState.matches++;
+    gameState.selectedCardIds = [];
+    gameState.isLocked = false;
+    updateCounters();
+  } else {
+    const timeOutId = setTimeout(() => {
+      firstCardDOM.classList.remove('is-flipped');
+      secondCardDOM.classList.remove('is-flipped');
+      firstCardDOM.setAttribute('aria-label', `Hidden card`);
+      secondCardDOM.setAttribute('aria-label', `Hidden card`);
+      gameState.selectedCardIds = [];
+      gameState.isLocked = false;
+      gameState.mismatchTimeoutId = null;
+    }, 1000);
+    gameState.mismatchTimeoutId = timeOutId;
+  }
 }
 
 function renderApp() {
@@ -104,6 +176,9 @@ function renderApp() {
   sectionStats.append(pLeft, pRight);
   pLeft.append(spanMoves);
   pRight.append(spanMatches);
+
+  //event
+  sectionGame.addEventListener('click', handleCardClick);
 }
 
 renderApp();

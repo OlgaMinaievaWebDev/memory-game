@@ -171,3 +171,11 @@ body {
 .card.is-matched::after {
   opacity: 0;
 }
+
+.card:disabled {
+  cursor: default;
+}
+
+.card.is-matched:hover {
+  transform: none;
+}
