@@ -212,3 +212,26 @@ body {
 body.modal-open {
   overflow: hidden;
 }
+
+.leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard__heading,
+.leaderboard__cell {
+  text-align: center;
+  padding: 10px 8px;
+}
+
+.leaderboard__head {
+  background-color: var(--board-background);
+}
+
+.leaderboard__row {
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard__body .leaderboard__row:last-child {
+  border-bottom: none;
+}

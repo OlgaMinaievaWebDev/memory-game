@@ -1,4 +1,44 @@
 const CARD_SYMBOLS = ['🦁', '🎨', '🚀', '🍕', '🎸', '⚽', '🍦', '👑'];
+const LEADERBOARD_STORAGE_KEY = 'memory-game-results';
+
+const loadResults = () => {
+  try {
+    const savedResults = JSON.parse(
+      localStorage.getItem(LEADERBOARD_STORAGE_KEY),
+    );
+    if (!savedResults) return [];
+    if (Array.isArray(savedResults)) {
+      return savedResults;
+    } else {
+      return [];
+    }
+  } catch {
+    return [];
+  }
+};
+
+function saveResult() {
+  const resultsArray = loadResults();
+  const result = {
+    moves: gameState.moves,
+    completedAt: new Date().toISOString(),
+  };
+  resultsArray.push(result);
+  resultsArray.sort((a, b) => {
+    if (a.moves !== b.moves) {
+      return a.moves - b.moves;
+    } else {
+      return (
+        new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
+      );
+    }
+  });
+  const firstTenResults = resultsArray.slice(0, 10);
+  localStorage.setItem(
+    LEADERBOARD_STORAGE_KEY,
+    JSON.stringify(firstTenResults),
+  );
+}
 
 const createDeck = () => {
   const deck = [];
@@ -156,6 +196,7 @@ function startNewGame() {
 function checkGameCompletion() {
   if (gameState.matches === CARD_SYMBOLS.length) {
     gameState.isComplete = true;
+    saveResult();
     showVictoryModal();
   }
 }
@@ -205,6 +246,78 @@ function showVictoryModal() {
   actionsModal.append(newGameButton, closeButton);
   const contentElements = [title, paragraph, actionsModal];
   openModal(contentElements);
+}
+
+function formatDate(isoString) {
+  const date = new Date(isoString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+function showLeaderboardModal() {
+  const results = loadResults();
+  const title = createElement('h2', 'modal__title', 'Leaderboard');
+  title.id = 'modal-title';
+
+  if (results.length === 0) {
+    const message = createElement('p', 'modal__message', 'No results yet.');
+    const closeButton = createElement('button', 'button', 'Close');
+    closeButton.type = 'button';
+    closeButton.addEventListener('click', closeModal);
+
+    const actions = createElement('div', 'modal__actions');
+    actions.append(closeButton);
+
+    openModal([title, message, actions]);
+    return;
+  }
+
+  const table = createElement('table', 'leaderboard');
+  const tableHead = createElement('thead', 'leaderboard__head');
+  const tableBody = createElement('tbody', 'leaderboard__body');
+  const headerRow = createElement('tr', 'leaderboard__row');
+
+  ['Place', 'Moves', 'Date'].forEach((label) => {
+    const headerCell = createElement('th', 'leaderboard__heading', label);
+    headerCell.setAttribute('scope', 'col');
+    headerRow.append(headerCell);
+  });
+
+  tableHead.append(headerRow);
+  table.append(tableHead, tableBody);
+
+  results.forEach((result, index) => {
+    const row = createElement('tr', 'leaderboard__row');
+    const placeCell = createElement(
+      'td',
+      'leaderboard__cell',
+      String(index + 1),
+    );
+    const movesCell = createElement(
+      'td',
+      'leaderboard__cell',
+      String(result.moves),
+    );
+    const dateCell = createElement(
+      'td',
+      'leaderboard__cell',
+      formatDate(result.completedAt),
+    );
+
+    row.append(placeCell, movesCell, dateCell);
+    tableBody.append(row);
+  });
+
+  const closeButton = createElement('button', 'button', 'Close');
+  closeButton.type = 'button';
+  closeButton.addEventListener('click', closeModal);
+
+  const actions = createElement('div', 'modal__actions');
+  actions.append(closeButton);
+
+  openModal([title, table, actions]);
 }
 
 function renderApp() {
@@ -257,6 +370,7 @@ function renderApp() {
       closeModal();
     }
   });
+  leaderboardButton.addEventListener('click', showLeaderboardModal);
 }
 
 renderApp();
