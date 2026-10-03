@@ -63,6 +63,7 @@ function createCardElement(card) {
 }
 
 function renderDeck(deck, boardElement) {
+  boardElement.replaceChildren();
   deck.forEach((card) => {
     const tile = createCardElement(card);
     boardElement.append(tile);
@@ -141,6 +142,16 @@ function resolveSelectedPair() {
   }
 }
 
+function startNewGame() {
+  if (gameState.mismatchTimeoutId !== null) {
+    clearTimeout(gameState.mismatchTimeoutId);
+  }
+  gameState = createInitialState();
+  const board = document.querySelector('.game-board');
+  renderDeck(gameState.deck, board);
+  updateCounters();
+}
+
 function renderApp() {
   const container = createElement('div', 'app');
 
@@ -179,6 +190,7 @@ function renderApp() {
 
   //event
   sectionGame.addEventListener('click', handleCardClick);
+  newGameButton.addEventListener('click', startNewGame);
 }
 
 renderApp();
