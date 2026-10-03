@@ -128,7 +128,7 @@ function resolveSelectedPair() {
     gameState.isLocked = false;
     updateCounters();
   } else {
-    const timeOutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       firstCardDOM.classList.remove('is-flipped');
       secondCardDOM.classList.remove('is-flipped');
       firstCardDOM.setAttribute('aria-label', `Hidden card`);
@@ -137,7 +137,7 @@ function resolveSelectedPair() {
       gameState.isLocked = false;
       gameState.mismatchTimeoutId = null;
     }, 1000);
-    gameState.mismatchTimeoutId = timeOutId;
+    gameState.mismatchTimeoutId = timeoutId;
   }
 }
 
