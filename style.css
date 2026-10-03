@@ -168,7 +168,7 @@ body {
 }
 
 .card.is-flipped::after,
-.card.is-matched::after {
+  .card.is-matched::after {
   opacity: 0;
 }
 
@@ -178,4 +178,37 @@ body {
 
 .card.is-matched:hover {
   transform: none;
+}
+
+.modal {
+  margin: auto;
+  width: 90vw;
+  max-width: 420px;
+  border: none;
+  padding: 0;
+  background-color: var(--card-front);
+  color: var(--main-text);
+  border-radius: 12px;
+  box-shadow: 6px 6px 6px var(--border);
+}
+
+.modal__content {
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.modal::backdrop {
+  background-color: rgb(15 23 42 / 0.65);
+}
+
+body.modal-open {
+  overflow: hidden;
 }

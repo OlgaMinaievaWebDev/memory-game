@@ -125,6 +125,7 @@ function resolveSelectedPair() {
     firstCardDOM.disabled = true;
     secondCardDOM.disabled = true;
     gameState.matches++;
+    checkGameCompletion();
     gameState.selectedCardIds = [];
     gameState.isLocked = false;
     updateCounters();
@@ -150,6 +151,60 @@ function startNewGame() {
   const board = document.querySelector('.game-board');
   renderDeck(gameState.deck, board);
   updateCounters();
+}
+
+function checkGameCompletion() {
+  if (gameState.matches === CARD_SYMBOLS.length) {
+    gameState.isComplete = true;
+    showVictoryModal();
+  }
+}
+
+function createModalElement() {
+  const dialog = createElement('dialog', 'modal');
+  dialog.setAttribute('aria-labelledby', 'modal-title');
+  const container = createElement('div', 'modal__content');
+  dialog.append(container);
+  return dialog;
+}
+
+function openModal(contentElements) {
+  const modal = document.querySelector('.modal');
+  const modalContent = document.querySelector('.modal__content');
+  if (!modal || !modalContent) return;
+  modalContent.replaceChildren(...contentElements);
+  modal.showModal();
+  document.body.classList.add('modal-open');
+}
+
+function closeModal() {
+  const modal = document.querySelector('.modal');
+  if (!modal) return;
+  modal.close();
+  document.body.classList.remove('modal-open');
+}
+
+function showVictoryModal() {
+  const title = createElement('h2', 'modal__title', 'You won!');
+  title.id = 'modal-title';
+  const paragraph = createElement(
+    'p',
+    'modal__message',
+    `You completed the game in ${gameState.moves} moves.`,
+  );
+  const actionsModal = createElement('div', 'modal__actions');
+  const closeButton = createElement('button', 'button', 'Close');
+  closeButton.type = 'button';
+  closeButton.addEventListener('click', closeModal);
+  const newGameButton = createElement('button', 'button', 'New Game');
+  newGameButton.type = 'button';
+  newGameButton.addEventListener('click', () => {
+    closeModal();
+    startNewGame();
+  });
+  actionsModal.append(newGameButton, closeButton);
+  const contentElements = [title, paragraph, actionsModal];
+  openModal(contentElements);
 }
 
 function renderApp() {
@@ -178,8 +233,11 @@ function renderApp() {
 
   renderDeck(gameState.deck, sectionGame);
 
+  //modal
+  const modal = createModalElement();
+
   //appends
-  document.body.appendChild(container);
+  document.body.append(container, modal);
   container.append(header, main);
   header.append(h1, controls);
   controls.append(newGameButton, leaderboardButton);
@@ -191,6 +249,14 @@ function renderApp() {
   //event
   sectionGame.addEventListener('click', handleCardClick);
   newGameButton.addEventListener('click', startNewGame);
+  modal.addEventListener('close', () => {
+    document.body.classList.remove('modal-open');
+  });
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
 }
 
 renderApp();
