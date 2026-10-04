@@ -2,6 +2,12 @@
 
 A browser-based card-matching game. Reveal two cards at a time, remember their positions, and find all eight matching emoji pairs in as few moves as possible.
 
+## Live demo
+
+[Play Memory Game](https://olgaminaievawebdev.github.io/memory-game/)
+
+![Memory Game screenshot](screenshot.png)
+
 ## Features
 
 - Sixteen shuffled cards with eight matching pairs
@@ -38,4 +44,6 @@ A browser-based card-matching game. Reveal two cards at a time, remember their p
 
 ## Deployment
 
-The public deployment link will be added after the project is published.
+The project is deployed with GitHub Pages:
+
+https://olgaminaievawebdev.github.io/memory-game/
